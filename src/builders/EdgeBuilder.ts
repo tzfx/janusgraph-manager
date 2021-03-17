@@ -3,8 +3,8 @@ import { EdgeMultiplicity } from "../types/Edge";
 import { Property } from "../types/Property";
 
 export class EdgeBuilder implements Builder<string> {
-    private _multiplicity: EdgeMultiplicity;
-    private _properties: Set<Property>;
+    private _multiplicity: EdgeMultiplicity | undefined;
+    private _properties: Set<Property> = new Set();
 
     constructor(private _label: string) {}
 

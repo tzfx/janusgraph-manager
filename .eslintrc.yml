@@ -1,9 +1,10 @@
----
 root: true
 parser: "@typescript-eslint/parser"
 plugins:
-  - "@typescript-eslint"
+    - "@typescript-eslint"
+    - "yaml"
 extends:
-  - "eslint:recommended"
-  - "plugin:@typescript-eslint/recommended"
-  - "prettier"
+    - "eslint:recommended"
+    - "plugin:@typescript-eslint/recommended"
+    - "prettier"
+    - "plugin:yaml/recommended"

@@ -2,7 +2,7 @@ import { Builder } from "./Builder.interface";
 import { Property } from "../types/Property";
 
 export class VertexBuilder implements Builder<string> {
-    private _properties: Set<Property>;
+    private _properties: Set<Property> = new Set();
 
     constructor(private _label: string) {}
 

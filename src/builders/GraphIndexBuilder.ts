@@ -7,10 +7,10 @@ import { IndexKey, IndexType } from "../types/GraphIndex";
  * For VertexCentric indicies, please use {@link VertexCentricIndexBuilder}
  */
 export class GraphIndexBuilder implements Builder<string> {
-    private _type: IndexType;
-    private _keys: Set<IndexKey>;
-    private _unique: boolean;
-    private _label: string;
+    private _type?: IndexType;
+    private _keys: Set<IndexKey> = new Set();
+    private _unique?: boolean;
+    private _label?: string;
 
     constructor(private _name: string) {}
 
@@ -24,12 +24,12 @@ export class GraphIndexBuilder implements Builder<string> {
         return this;
     }
 
-    unique(unique: boolean): this {
+    unique(unique = false): this {
         this._unique = unique;
         return this;
     }
     
-    label(label: string): this {
+    label(label?: string): this {
         this._label = label;
         return this;
     }
