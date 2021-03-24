@@ -3,6 +3,7 @@
 const path = require('path');
 
 module.exports = {
+    devtool: 'source-map',
     entry: './src/JanusGraphManager.ts',
     module: {
         rules: [
@@ -18,8 +19,8 @@ module.exports = {
     },
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: 'janusgraph-manager.js',
-        
-        library: 'janusgraph_manager'
+        filename: 'janusgraph-manager.min.js',
+        sourceMapFilename: 'janusgraph-manager.js.map',
+        library: 'janusgraphmanager'
     }
 }

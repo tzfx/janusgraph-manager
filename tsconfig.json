@@ -1,6 +1,7 @@
 {
     "extends": "@tsconfig/node14/tsconfig.json",
     "compilerOptions": {
+        "declaration": true,
         "downlevelIteration": true,
         "preserveConstEnums": true,
         "target": "ES5",

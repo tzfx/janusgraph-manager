@@ -2,7 +2,7 @@
   "name": "janusgraph-manager",
   "version": "0.5.3",
   "description": "Janusgraph management tooling in NodeJS/Typescript",
-  "main": "dist/janusgraph-manager.js",
+  "main": "dist/janusgraph-manager.min.js",
   "scripts": {
     "build": "tsc",
     "clean": "tsc --build --clean",
