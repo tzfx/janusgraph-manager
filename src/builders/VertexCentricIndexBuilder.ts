@@ -7,10 +7,10 @@ import { Direction, Order } from "../types/VertexCentricIndex";
  * For Mixed/Composite, please use {@link IndexBuilder}
  */
 export class VertexCentricIndexBuilder implements Builder<string> {
-    private _keys: Set<string>;
-    private _direction: Direction;
-    private _order: Order;
-    private _edgelabel: string;
+    private _keys: Set<string> = new Set();
+    private _direction!: Direction;
+    private _order!: Order;
+    private _edgelabel!: string;
 
     constructor(private _name: string) {}
 
@@ -35,6 +35,7 @@ export class VertexCentricIndexBuilder implements Builder<string> {
     }
 
     build(): string {
+        // @TODO: Check for nulls in required properties.
         let output = `if (!mgmt.containsGraphIndex('${this._name}')) `;
         output += `mgmt.buildEdgeIndex(`;
         output += `mgmt.getEdgeLabel("${this._edgelabel}"),`;

@@ -11,13 +11,19 @@ import {
 type ManagerState = "NEW" | "INITIALIZED" | "ERROR" | "CLOSED";
 
 export class JanusGraphManager {
-    private output = "";
 
     private state: ManagerState = "NEW";
 
-    private OPEN_MGMT = "mgmt = graph.openManagement();0;";
+    private OPEN_MGMT = `mgmt = ${this.graphName}.openManagement();0;`;
 
-    constructor(private client: driver.Client) {}
+    /**
+     * 
+     * @param client Preconfigured gremlin client to use.
+     * @param graphName Name of the graph to traverse. Default `graph`.
+     * @param useConfiguredGraphFactory Whether or not to use the ConfiguredGraphFactory for dynamic graphs. Default `false`.
+     */
+    constructor(private client: driver.Client, private graphName: string = 'graph', private useConfiguredGraphFactory: boolean = false) {
+    }
 
     /**
      * Opens the management system for the client session.
@@ -25,6 +31,9 @@ export class JanusGraphManager {
      */
     async init(): Promise<ManagerState> {
         try {
+            if (this.useConfiguredGraphFactory) {
+                await this.client.submit(`${this.graphName} = ConfiguredGraphFactory.open('${this.graphName})`);
+            }
             await this.client.submit(this.OPEN_MGMT);
             this.state = "INITIALIZED";
             return Promise.resolve(this.state);

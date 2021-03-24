@@ -2,8 +2,8 @@ import { Builder } from "./Builder.interface";
 import { PropertyCardinality, PropertyType } from "../types/Property";
 
 export class PropertyBuilder implements Builder<string> {
-    private _datatype: PropertyType;
-    private _cardinality: PropertyCardinality;
+    private _datatype!: PropertyType;
+    private _cardinality: PropertyCardinality = "SINGLE";
 
     constructor(private _key: string) {}
 
