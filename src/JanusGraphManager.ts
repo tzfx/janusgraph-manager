@@ -2,6 +2,7 @@ import { driver } from "gremlin";
 import { GraphSchema } from "./types/GraphSchema";
 import {
     EdgeBuilder,
+    EnableIndexBuilder,
     GraphIndexBuilder,
     PropertyBuilder,
     VertexBuilder,
@@ -18,7 +19,7 @@ export class JanusGraphManager {
 
     /**
      * 
-     * @param client Preconfigured gremlin client to use.
+     * @param client Preconfigured gremlin client to use. Using a client with a defined session name is recommended.
      * @param graphName Name of the graph to traverse. Default `graph`.
      * @param useConfiguredGraphFactory Whether or not to use the ConfiguredGraphFactory for dynamic graphs. Default `false`.
      */
@@ -96,6 +97,36 @@ export class JanusGraphManager {
     }
 
     /**
+     * Attempts to enable indices.
+     * @param schema - GraphSchema to enable indicies for. 
+     * @param commit - Whether or not to commit and close the traversal. Default: `false`
+     * @returns A promise containing the number of successful traversals made.
+     */
+    async enableIndices(schema: GraphSchema, commit = false): Promise<number> {
+        try {
+            const gi = schema.graphIndices
+            .map((i) => {
+                const builder = new EnableIndexBuilder(i.name, schema.name);
+                return builder.build();
+            });
+            const vci = schema.vcIndices
+                .map((i) => {
+                    const builder = new EnableIndexBuilder(i.name, schema.name);
+                    return builder.type("VertexCentric")
+                        .label(i.edgelabel)
+                        .build();
+                });
+            const count = [...gi, ...vci].map((msg) => this.client.submit(msg)).length;
+            if (commit) {
+                await this.commit();
+            }
+            return Promise.resolve(count);
+        } catch (err) {
+            return Promise.reject(err);
+        }
+    }
+
+    /**
      * Creates all the schema definitions.
      * @param schema - GraphSchema to get schema definitions from.
      * @param indices - If set `true`, will build indices as well. Default `false`.
@@ -153,9 +184,14 @@ export class JanusGraphManager {
         }
     }
 
+    /**
+     * Leverages the gremlin client to commit a management message.
+     * @param message Message to send prior to the commit. Not required.
+     * @returns 
+     */
     async commit(message?: string): Promise<unknown> {
         try {
-            const close = await this.client.submit(`${message ?? ""}mgmt.commit();`);
+            const close = await this.client.submit(`${message ?? ""};mgmt.commit();`);
             this.state = "CLOSED";
             return close;
         } catch (err) {
