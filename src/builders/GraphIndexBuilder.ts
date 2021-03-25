@@ -1,5 +1,5 @@
 import { Builder } from "./Builder.interface";
-import { IndexKey, IndexType } from "../types/GraphIndex";
+import { CompositeOrMixedIndexType, IndexKey, IndexType } from "../types/GraphIndex";
 
 /**
  * Index Builder for Composite or Mixed indices.
@@ -7,20 +7,21 @@ import { IndexKey, IndexType } from "../types/GraphIndex";
  * For VertexCentric indicies, please use {@link VertexCentricIndexBuilder}
  */
 export class GraphIndexBuilder implements Builder<string> {
-    private _type?: IndexType;
-    private _keys: Set<IndexKey> = new Set();
+    private _type?: CompositeOrMixedIndexType;
+    private _keys: IndexKey[] = [];
     private _unique?: boolean;
     private _label?: string;
 
     constructor(private _name: string) {}
 
-    type(type: IndexType): this {
+    type(type: CompositeOrMixedIndexType): this {
         this._type = type;
         return this;
     }
 
     key(key: IndexKey): this {
-        this._keys.add(key);
+        if (this._keys.some((k) => k.field === key.field)) return this;
+        this._keys.push(key);
         return this;
     }
 
@@ -35,20 +36,23 @@ export class GraphIndexBuilder implements Builder<string> {
     }
 
     build(): string {
+        if (this._keys.length === 0) {
+            throw Error(`Unable to generate index ${this._name} with no key definitions.`);
+        }
         let output = `if (!mgmt.containsGraphIndex('${this._name}')) `;
         output += `mgmt.buildIndex('${this._name}', Vertex.class)`;
         output += [...this._keys]
             .map(
                 (key) =>
-                    `.addKey(mgmt.getPropertyKey('${key.field}, Mapping.${key.mapping}.getParameter()'))`
+                    `.addKey(mgmt.getPropertyKey('${key.field}'), Mapping.${key.mapping}.getParameter())`
             )
             .join("");
         output += this._unique ? `.unique()` : "";
-        output += this._label != null ? `.indexOnly(mgmt.getVertexLabel('${this._label}))` : "";
+        output += this._label != null ? `.indexOnly(mgmt.getVertexLabel('${this._label}'))` : "";
         return output.concat(
-            this._type === "Composite"
-                ? ".buildCompositeIndex();"
-                : '.buildMixedIndex("search");'
+            this._type === "Mixed"
+                ? '.buildMixedIndex("search");'
+                : ".buildCompositeIndex();"
         );
     }
 }

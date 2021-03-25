@@ -9,7 +9,7 @@ import { Direction, Order } from "../types/VertexCentricIndex";
 export class VertexCentricIndexBuilder implements Builder<string> {
     private _keys: Set<string> = new Set();
     private _direction!: Direction;
-    private _order!: Order;
+    private _order: Order = "asc";
     private _edgelabel!: string;
 
     constructor(private _name: string) {}
@@ -35,16 +35,24 @@ export class VertexCentricIndexBuilder implements Builder<string> {
     }
 
     build(): string {
-        // @TODO: Check for nulls in required properties.
+        if (this._keys.size === 0) {
+            throw Error(`Unable to generate vc index ${this._name} with no key definitions.`);
+        }
+        if (this._direction == null) {
+            throw Error(`Unable to generate vc index ${this._name} with no directionality.`);
+        }
+        if (this._edgelabel == null || this._edgelabel === '') {
+            throw Error(`Unable to generate vc index ${this._name} with no edge label.`);
+        }
         let output = `if (!mgmt.containsGraphIndex('${this._name}')) `;
         output += `mgmt.buildEdgeIndex(`;
-        output += `mgmt.getEdgeLabel("${this._edgelabel}"),`;
-        output += `'${this._name}',`;
-        output += `Direction.${this._direction},`;
-        output += `Order.${this._order},`;
+        output += `mgmt.getEdgeLabel('${this._edgelabel}'), `;
+        output += `'${this._name}', `;
+        output += `Direction.${this._direction}, `;
+        output += `Order.${this._order}, `;
         output += [...this._keys]
             .map((key) => `mgmt.getPropertyKey('${key}')`)
-            .join(",");
-        return output.concat(")");
+            .join(", ");
+        return output.concat(");");
     }
 }

@@ -7,6 +7,6 @@ export type VertexCentricIndex = {
     edgelabel: string;
 }
 
-export type Direction = "IN" | "OUT";
+export type Direction = "IN" | "OUT" | "BOTH";
 
 export type Order = "desc" | "asc"

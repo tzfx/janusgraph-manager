@@ -18,7 +18,7 @@ export class PropertyBuilder implements Builder<string> {
     }
 
     build(): string {
-        let output = "if (!mgmt.containsPropertyKey('${this._key}')) ";
+        let output = `if (!mgmt.containsPropertyKey('${this._key}')) `;
         output += `mgmt.makePropertyKey('${this._key}')`;
         output +=
             this._datatype != null ? `.dataType(${this._datatype}.class)` : "";
