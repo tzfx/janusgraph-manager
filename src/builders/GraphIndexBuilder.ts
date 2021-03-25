@@ -1,5 +1,5 @@
 import { Builder } from "./Builder.interface";
-import { CompositeOrMixedIndexType, IndexKey, IndexType } from "../types/GraphIndex";
+import { CompositeOrMixedIndexType, IndexKey } from "../types/GraphIndex";
 
 /**
  * Index Builder for Composite or Mixed indices.
