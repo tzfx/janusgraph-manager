@@ -1,7 +1,7 @@
 export type GraphIndex = {
     name: string;
     keys: Set<IndexKey>;
-    type: IndexType;
+    type: CompositeOrMixedIndexType;
     unique?: boolean;
     label?: string;
 };

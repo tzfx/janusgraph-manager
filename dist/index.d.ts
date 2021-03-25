@@ -51,7 +51,7 @@ declare module 'janusgraphmanager/types/GraphIndex' {
     export type GraphIndex = {
         name: string;
         keys: Set<IndexKey>;
-        type: IndexType;
+        type: CompositeOrMixedIndexType;
         unique?: boolean;
         label?: string;
     };
@@ -60,7 +60,9 @@ declare module 'janusgraphmanager/types/GraphIndex' {
         mapping: IndexKeyMapping;
     };
     export type IndexKeyMapping = "STRING" | "TEXT" | "TEXTSTRING" | "PREFIX_TREE";
-    export type IndexType = "Composite" | "Mixed" | "VertexCentric";
+    export type CompositeOrMixedIndexType = "Composite" | "Mixed";
+    export type VertexCentricIndexType = "VertexCentric";
+    export type IndexType = CompositeOrMixedIndexType | VertexCentricIndexType;
 }
 
 declare module 'janusgraphmanager/types/VertexCentricIndex' {
@@ -71,7 +73,7 @@ declare module 'janusgraphmanager/types/VertexCentricIndex' {
         order: Order;
         edgelabel: string;
     };
-    export type Direction = "IN" | "OUT";
+    export type Direction = "IN" | "OUT" | "BOTH";
     export type Order = "desc" | "asc";
 }
 
