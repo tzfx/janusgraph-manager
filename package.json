@@ -2,6 +2,13 @@
   "name": "janusgraph-manager",
   "version": "0.5.3",
   "description": "Janusgraph management tooling in NodeJS/Typescript",
+  "keywords": [
+    "janusgraph",
+    "graph",
+    "management",
+    "gremlin",
+    "tinkerpop"
+  ],
   "main": "dist/index.min.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -11,8 +18,12 @@
     "lint:fix": "npm run lint --fix",
     "test": "ts-node node_modules/jasmine/bin/jasmine"
   },
-  "author": "Adam Stadler",
-  "license": "ISC",
+  "author": "Adam Stadler <astadler@asymmetrik.com>",
+  "repository": "github:tzfx/janusgraph-manager",
+  "files": [
+    "dist/*"
+  ],
+  "license": "MIT",
   "peerDependencies": {
     "gremlin": "^3.4.10"
   },
