@@ -13,3 +13,5 @@ This project's goal is to have a JS/TS management library for JanusGraph, lettin
 - To install dependencies: `npm i`
 - To compile js: `npm run build`
 - To generate minified bundle: `npm run package`
+- To run tests: `npm run test`
+- To lint: `npm run lint` or `npm run lint:fix`
