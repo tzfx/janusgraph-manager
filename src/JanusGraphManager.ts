@@ -9,7 +9,7 @@ import {
     VertexCentricIndexBuilder,
 } from "./builders";
 
-type ManagerState = "NEW" | "INITIALIZED" | "ERROR" | "CLOSED";
+type ManagerState = "NEW" | "READY" | "ERROR" | "CLOSED";
 
 export type JanusGraphMangerOptions = {
     /**
@@ -69,7 +69,7 @@ export class JanusGraphManager {
                 await this.options.client.submit(`${this.options.graphName} = JanusGraphFactory.open('${this.options.configPath})'`)
             }
             await this.options.client.submit(this.OPEN_MGMT);
-            this.state = "INITIALIZED";
+            this.state = "READY";
             return Promise.resolve(this.state);
         } catch (err) {
             this.state = "ERROR";
@@ -220,11 +220,25 @@ export class JanusGraphManager {
     /**
      * Leverages the gremlin client to commit a management message.
      * @param message Message to send prior to the commit. Not required.
-     * @returns A promise from client submission.
+     * @returns A promise from client commit submission.
      */
     async commit(message?: string): Promise<unknown> {
         try {
-            const close = await this.options.client.submit(`${message ?? ""};mgmt.commit();`);
+            const commit = await this.options.client.submit(`${message ?? ""};mgmt.commit();`);
+            return commit;
+        } catch (err) {
+            this.state = "ERROR";
+            return Promise.reject(err);
+        }
+    }
+
+    /**
+     * Attempts to close the gremlin client.
+     * @returns A promise with close status-- defers to {@see driver.Client.prototype.close()}
+     */
+    async close(): Promise<void> {
+        try {
+            const close = await this.options.client.close();
             this.state = "CLOSED";
             return close;
         } catch (err) {

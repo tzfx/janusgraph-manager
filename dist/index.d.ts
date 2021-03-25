@@ -4,14 +4,21 @@
 
 import { driver } from "gremlin";
 import { GraphSchema } from "janusgraphmanager/types/GraphSchema";
-declare type ManagerState = "NEW" | "INITIALIZED" | "ERROR" | "CLOSED";
+declare type ManagerState = "NEW" | "READY" | "ERROR" | "CLOSED";
+export declare type JanusGraphMangerOptions = {
+    client: driver.Client;
+    graphName?: string;
+    useConfiguredGraphFactory?: boolean;
+    configPath?: string;
+};
 export declare class JanusGraphManager {
-    constructor(client: driver.Client, graphName?: string, useConfiguredGraphFactory?: boolean);
+    constructor(options: JanusGraphMangerOptions);
     init(): Promise<ManagerState>;
     createIndices(schema: GraphSchema, commit?: boolean): Promise<number>;
     enableIndices(schema: GraphSchema, commit?: boolean): Promise<number>;
     createSchema(schema: GraphSchema, indices?: boolean): Promise<number>;
     commit(message?: string): Promise<unknown>;
+    close(): Promise<void>;
 }
 export {};
 
