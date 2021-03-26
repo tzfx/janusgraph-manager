@@ -11,7 +11,8 @@ const dtsBundlerOpts = {
     removeSource: false
 };
 
-module.exports = {
+module.exports = (_, argv) => ({
+    mode: argv.mode ?? 'development',
     devtool: 'source-map',
     entry: './src/JanusGraphManager.ts',
     module: {
@@ -29,12 +30,15 @@ module.exports = {
     resolve: {
         extensions: ['.tsx', '.ts', '.js']
     },
+    optimization: {
+        minimize: argv.mode === 'production'
+    },
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: 'index.min.js',
+        filename: argv.mode === 'production' ? 'index.min.js' : 'index.js',
         sourceMapFilename: 'index.js.map',
         library: 'janusgraphmanager',
         libraryTarget: 'umd',
         umdNamedDefine: true
     },
-}
+})
