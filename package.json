@@ -12,8 +12,7 @@
   "main": "dist/index.min.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "webpack --mode development",
-    "package": "webpack --mode production",
+    "build": "webpack --mode development; webpack --mode production",
     "lint": "eslint . --ext .js,.ts,.yml",
     "lint:fix": "npm run lint --fix",
     "test": "ts-node node_modules/jasmine/bin/jasmine"

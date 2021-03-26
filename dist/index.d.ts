@@ -6,13 +6,12 @@ import { driver } from "gremlin";
 import { GraphSchema } from "janusgraphmanager/types/GraphSchema";
 declare type ManagerState = "NEW" | "READY" | "ERROR" | "CLOSED";
 export declare type JanusGraphMangerOptions = {
-    client: driver.Client;
     graphName?: string;
     useConfiguredGraphFactory?: boolean;
     configPath?: string;
 };
 export declare class JanusGraphManager {
-    constructor(options: JanusGraphMangerOptions);
+    constructor(client: driver.Client, options: JanusGraphMangerOptions);
     init(): Promise<ManagerState>;
     createIndices(schema: GraphSchema, commit?: boolean): Promise<number>;
     enableIndices(schema: GraphSchema, commit?: boolean): Promise<number>;
@@ -57,7 +56,7 @@ declare module 'janusgraphmanager/types/Vertex' {
 declare module 'janusgraphmanager/types/GraphIndex' {
     export type GraphIndex = {
         name: string;
-        keys: Set<IndexKey>;
+        keys: IndexKey[];
         type: CompositeOrMixedIndexType;
         unique?: boolean;
         label?: string;

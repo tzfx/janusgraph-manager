@@ -80,7 +80,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.JanusGraphManager = void 0;
 var builders_1 = __webpack_require__(/*! ./builders */ "./src/builders/index.ts");
 var JanusGraphManager = (function () {
-    function JanusGraphManager(options) {
+    function JanusGraphManager(client, options) {
+        this.client = client;
         this.options = options;
         this.state = "NEW";
         this.OPEN_MGMT = "mgmt = " + this.options.graphName + ".openManagement();0;";
@@ -99,17 +100,17 @@ var JanusGraphManager = (function () {
                     case 0:
                         _a.trys.push([0, 6, , 7]);
                         if (!this.options.useConfiguredGraphFactory) return [3, 2];
-                        return [4, this.options.client.submit(this.options.graphName + " = ConfiguredGraphFactory.open('" + this.options.graphName + "')")];
+                        return [4, this.client.submit(this.options.graphName + " = ConfiguredGraphFactory.open('" + this.options.graphName + "')")];
                     case 1:
                         _a.sent();
                         return [3, 4];
                     case 2:
                         if (!(this.options.configPath != null)) return [3, 4];
-                        return [4, this.options.client.submit(this.options.graphName + " = JanusGraphFactory.open('" + this.options.configPath + ")'")];
+                        return [4, this.client.submit(this.options.graphName + " = JanusGraphFactory.open('" + this.options.configPath + ")'")];
                     case 3:
                         _a.sent();
                         _a.label = 4;
-                    case 4: return [4, this.options.client.submit(this.OPEN_MGMT)];
+                    case 4: return [4, this.client.submit(this.OPEN_MGMT)];
                     case 5:
                         _a.sent();
                         this.state = "READY";
@@ -144,7 +145,7 @@ var JanusGraphManager = (function () {
                                 i.keys.forEach(function (k) { return builder.key(k); });
                                 return builder.build();
                             })
-                                .map(function (msg) { return _this.options.client.submit(msg); }))];
+                                .map(function (msg) { return _this.client.submit(msg); }))];
                     case 1:
                         count = _a + (_c.sent()).length;
                         _b = count;
@@ -158,7 +159,7 @@ var JanusGraphManager = (function () {
                                 i.keys.forEach(function (k) { return builder.key(k); });
                                 return builder.build();
                             })
-                                .map(function (msg) { return _this.options.client.submit(msg); }))];
+                                .map(function (msg) { return _this.client.submit(msg); }))];
                     case 2:
                         count = _b + (_c.sent()).length;
                         if (!commit) return [3, 4];
@@ -196,7 +197,7 @@ var JanusGraphManager = (function () {
                                 .label(i.edgelabel)
                                 .build();
                         });
-                        count = __spreadArray(__spreadArray([], __read(gi)), __read(vci)).map(function (msg) { return _this.options.client.submit(msg); }).length;
+                        count = __spreadArray(__spreadArray([], __read(gi)), __read(vci)).map(function (msg) { return _this.client.submit(msg); }).length;
                         if (!commit) return [3, 2];
                         return [4, this.commit()];
                     case 1:
@@ -230,7 +231,7 @@ var JanusGraphManager = (function () {
                                     .cardinality(p.cardinality)
                                     .build();
                             })
-                                .map(function (msg) { return _this.options.client.submit(msg); }))];
+                                .map(function (msg) { return _this.client.submit(msg); }))];
                     case 1:
                         count = _a + (_e.sent()).length;
                         _b = count;
@@ -240,7 +241,7 @@ var JanusGraphManager = (function () {
                                 v.properties.forEach(function (p) { return builder.property(p); });
                                 return builder.build();
                             })
-                                .map(function (msg) { return _this.options.client.submit(msg); }))];
+                                .map(function (msg) { return _this.client.submit(msg); }))];
                     case 2:
                         count = _b + (_e.sent()).length;
                         _c = count;
@@ -250,7 +251,7 @@ var JanusGraphManager = (function () {
                                 e.properties.forEach(function (p) { return builder.property(p); });
                                 return builder.build();
                             })
-                                .map(function (msg) { return _this.options.client.submit(msg); }))];
+                                .map(function (msg) { return _this.client.submit(msg); }))];
                     case 3:
                         count = _c + (_e.sent()).length;
                         if (!indices) return [3, 5];
@@ -278,7 +279,7 @@ var JanusGraphManager = (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4, this.options.client.submit((message !== null && message !== void 0 ? message : "") + ";mgmt.commit();")];
+                        return [4, this.client.submit((message !== null && message !== void 0 ? message : "") + ";mgmt.commit();")];
                     case 1:
                         commit = _a.sent();
                         return [2, commit];
@@ -298,7 +299,7 @@ var JanusGraphManager = (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4, this.options.client.close()];
+                        return [4, this.client.close()];
                     case 1:
                         close = _a.sent();
                         this.state = "CLOSED";
