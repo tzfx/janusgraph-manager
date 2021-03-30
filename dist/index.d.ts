@@ -2,9 +2,10 @@
 // Dependencies for this module:
 //   ../gremlin
 
-import { driver } from "gremlin";
-import { GraphSchema } from "janusgraphmanager/types/GraphSchema";
-declare type ManagerState = "NEW" | "READY" | "ERROR" | "CLOSED";
+import { driver } from 'gremlin';
+import { GraphSchema } from 'janusgraphmanager/types/GraphSchema';
+import { GraphIndex } from 'janusgraphmanager/types/GraphIndex';
+import { VertexCentricIndex } from 'janusgraphmanager/types/VertexCentricIndex';
 export declare type JanusGraphMangerOptions = {
     graphName?: string;
     useConfiguredGraphFactory?: boolean;
@@ -12,14 +13,14 @@ export declare type JanusGraphMangerOptions = {
 };
 export declare class JanusGraphManager {
     constructor(client: driver.Client, options: JanusGraphMangerOptions);
-    init(): Promise<ManagerState>;
+    createGraphIndex(index: GraphIndex, commit?: boolean): Promise<number>;
+    createVertexCentricIndex(index: VertexCentricIndex, commit?: boolean): Promise<number>;
     createIndices(schema: GraphSchema, commit?: boolean): Promise<number>;
     enableIndices(schema: GraphSchema, commit?: boolean): Promise<number>;
     createSchema(schema: GraphSchema, indices?: boolean): Promise<number>;
     commit(message?: string): Promise<unknown>;
     close(): Promise<void>;
 }
-export {};
 
 declare module 'janusgraphmanager/types/GraphSchema' {
     import { Edge } from "janusgraphmanager/types/Edge";
@@ -32,24 +33,6 @@ declare module 'janusgraphmanager/types/GraphSchema' {
         edges: Edge[];
         graphIndices: GraphIndex[];
         vcIndices: VertexCentricIndex[];
-    };
-}
-
-declare module 'janusgraphmanager/types/Edge' {
-    import { Property } from "janusgraphmanager/types/Property";
-    export type Edge = {
-        label: string;
-        multiplicity: EdgeMultiplicity;
-        properties: Property[];
-    };
-    export type EdgeMultiplicity = "MULTI" | "SIMPLE" | "MANY2ONE" | "ONE2MANY" | "ONE2ONE";
-}
-
-declare module 'janusgraphmanager/types/Vertex' {
-    import { Property } from "janusgraphmanager/types/Property";
-    export type Vertex = {
-        label: string;
-        properties: Property[];
     };
 }
 
@@ -81,6 +64,24 @@ declare module 'janusgraphmanager/types/VertexCentricIndex' {
     };
     export type Direction = "IN" | "OUT" | "BOTH";
     export type Order = "desc" | "asc";
+}
+
+declare module 'janusgraphmanager/types/Edge' {
+    import { Property } from "janusgraphmanager/types/Property";
+    export type Edge = {
+        label: string;
+        multiplicity: EdgeMultiplicity;
+        properties: Property[];
+    };
+    export type EdgeMultiplicity = "MULTI" | "SIMPLE" | "MANY2ONE" | "ONE2MANY" | "ONE2ONE";
+}
+
+declare module 'janusgraphmanager/types/Vertex' {
+    import { Property } from "janusgraphmanager/types/Property";
+    export type Vertex = {
+        label: string;
+        properties: Property[];
+    };
 }
 
 declare module 'janusgraphmanager/types/Property' {

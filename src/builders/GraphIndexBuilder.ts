@@ -1,9 +1,9 @@
-import { Builder } from "./Builder.interface";
-import { CompositeOrMixedIndexType, IndexKey } from "../types/GraphIndex";
+import { Builder } from './Builder.interface';
+import { CompositeOrMixedIndexType, IndexKey } from '../types/GraphIndex';
 
 /**
  * Index Builder for Composite or Mixed indices.
- * 
+ *
  * For VertexCentric indicies, please use {@link VertexCentricIndexBuilder}
  */
 export class GraphIndexBuilder implements Builder<string> {
@@ -29,7 +29,7 @@ export class GraphIndexBuilder implements Builder<string> {
         this._unique = unique;
         return this;
     }
-    
+
     label(label?: string): this {
         this._label = label;
         return this;
@@ -37,22 +37,31 @@ export class GraphIndexBuilder implements Builder<string> {
 
     build(): string {
         if (this._keys.length === 0) {
-            throw Error(`Unable to generate index ${this._name} with no key definitions.`);
+            throw Error(
+                `Unable to generate index ${this._name} with no key definitions.`
+            );
         }
         let output = `if (!mgmt.containsGraphIndex('${this._name}')) `;
         output += `mgmt.buildIndex('${this._name}', Vertex.class)`;
         output += [...this._keys]
             .map(
                 (key) =>
-                    `.addKey(mgmt.getPropertyKey('${key.field}'), Mapping.${key.mapping}.getParameter())`
+                    `.addKey(mgmt.getPropertyKey('${key.field}')${
+                        this._type === 'Mixed'
+                            ? `Mapping.${key.mapping}.asParameter()`
+                            : ''
+                    })`
             )
-            .join("");
-        output += this._unique ? `.unique()` : "";
-        output += this._label != null ? `.indexOnly(mgmt.getVertexLabel('${this._label}'))` : "";
+            .join('');
+        output += this._unique ? `.unique()` : '';
+        output +=
+            this._label != null
+                ? `.indexOnly(mgmt.getVertexLabel('${this._label}'))`
+                : '';
         return output.concat(
-            this._type === "Mixed"
+            this._type === 'Mixed'
                 ? '.buildMixedIndex("search");'
-                : ".buildCompositeIndex();"
+                : '.buildCompositeIndex();'
         );
     }
 }

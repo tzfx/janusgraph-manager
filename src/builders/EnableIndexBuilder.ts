@@ -49,7 +49,7 @@ export class EnableIndexBuilder implements Builder<string> {
                 );
             output += `mgmt.getRelationIndex(${this._graph}, '${this._name}', '${this._label}')`;
         } else {
-            output += `mgmt.getGraphIndex(${this._graph}, '${this._name}')`;
+            output += `mgmt.getGraphIndex('${this._name}')`;
         }
         output += `, SchemaAction.ENABLE_INDEX);`;
         return output;

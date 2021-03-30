@@ -3,6 +3,8 @@
 const path = require('path');
 const DtsBundleWebpack = require('dts-bundle-webpack');
 
+const isProd = (argv) => argv?.mode === 'production';
+
 const dtsBundlerOpts = {
     name: 'janusgraphmanager',
     main: 'build/JanusGraphmanager.d.ts',
@@ -13,7 +15,7 @@ const dtsBundlerOpts = {
 
 module.exports = (_, argv) => ({
     mode: argv.mode ?? 'development',
-    devtool: 'source-map',
+    devtool: isProd(argv) ? 'inline-source-map' : false,
     entry: './src/JanusGraphManager.ts',
     module: {
         rules: [
@@ -31,14 +33,15 @@ module.exports = (_, argv) => ({
         extensions: ['.tsx', '.ts', '.js']
     },
     optimization: {
-        minimize: argv.mode === 'production'
+        minimize: isProd(argv)
     },
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: argv.mode === 'production' ? 'index.min.js' : 'index.js',
-        sourceMapFilename: 'index.js.map',
-        library: 'janusgraphmanager',
-        libraryTarget: 'umd',
-        umdNamedDefine: true
+        filename: isProd(argv) ? 'index.min.js' : 'index.js',
+        // sourceMapFilename: 'index.js.map',
+        library: {
+                name: 'janusgraphmanager',
+                type: 'commonjs'
+        }
     },
 })

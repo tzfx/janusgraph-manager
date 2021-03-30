@@ -1,5 +1,5 @@
-import { driver } from "gremlin";
-import { GraphSchema } from "./types/GraphSchema";
+import { driver } from 'gremlin';
+import { GraphSchema } from './types/GraphSchema';
 import {
     EdgeBuilder,
     EnableIndexBuilder,
@@ -7,34 +7,34 @@ import {
     PropertyBuilder,
     VertexBuilder,
     VertexCentricIndexBuilder,
-} from "./builders";
+} from './builders';
+import { GraphIndex } from './types/GraphIndex';
+import { VertexCentricIndex } from './types/VertexCentricIndex';
 
-type ManagerState = "NEW" | "READY" | "ERROR" | "CLOSED";
+type ManagerState = 'NEW' | 'READY' | 'COMMIT' | 'ERROR' | 'CLOSED';
 
 export type JanusGraphMangerOptions = {
     /**
      * Name of the graph to traverse.
      */
-    graphName?: string,
+    graphName?: string;
     /**
      * Whether or not to use the ConfiguredGraphFactory for dynamic graphs.
      */
-    useConfiguredGraphFactory?: boolean,
+    useConfiguredGraphFactory?: boolean;
     /**
      * Path to a JanusGraphFactory configuration on the remote, for use with JanusGraphFactory.
      */
-    configPath?: string
+    configPath?: string;
 };
 
 export class JanusGraphManager {
+    private state: ManagerState = 'NEW';
 
-    private state: ManagerState = "NEW";
-
-    // The ";0;" is a weird work around to prevent an error being thrown.
     private OPEN_MGMT = `mgmt = ${this.options.graphName}.openManagement();0;`;
 
     /**
-     * Default constructor.  
+     * Default constructor.
      * @param client A preconfigured gremlin client for accessing gremlin-server.
      * @param options JanusGraphOptions for accessing the graph:
      * - graphName will have a default of `'graph'`.
@@ -51,27 +51,64 @@ export class JanusGraphManager {
         if (options.useConfiguredGraphFactory == null) {
             this.options.useConfiguredGraphFactory = false;
         }
-
     }
 
     /**
      * Opens the management system for the client session.
      * @returns A promise with the state of the manager.
      */
-    async init(): Promise<ManagerState> {
+    private async init(): Promise<ManagerState> {
         try {
-            if (this.options.useConfiguredGraphFactory) {
-                await this.client.submit(`${this.options.graphName} = ConfiguredGraphFactory.open('${this.options.graphName}')`);
-            } else if (this.options.configPath != null) {
-                await this.client.submit(`${this.options.graphName} = JanusGraphFactory.open('${this.options.configPath})'`)
+            if (this.state !== 'READY') {
+                if (this.options.useConfiguredGraphFactory) {
+                    // The ";0;" is a weird work around to prevent an error being thrown.
+                    await this.client.submit(
+                        `${this.options.graphName} = ConfiguredGraphFactory.open('${this.options.graphName}');0;`
+                    );
+                } else if (this.options.configPath != null) {
+                    await this.client.submit(
+                        `${this.options.graphName} = JanusGraphFactory.open('${this.options.configPath}');0;`
+                    );
+                }
+                await this.client.submit(this.OPEN_MGMT);
+                this.state = 'READY';
             }
-            await this.client.submit(this.OPEN_MGMT);
-            this.state = "READY";
             return Promise.resolve(this.state);
         } catch (err) {
-            this.state = "ERROR";
-            return Promise.reject("ERROR");
+            this.state = 'ERROR';
+            return Promise.reject(err);
         }
+    }
+
+    async createGraphIndex(index: GraphIndex, commit = false): Promise<number> {
+        const builder = new GraphIndexBuilder(index.name);
+        builder.label(index.label).type(index.type).unique(index.unique);
+        index.keys.forEach((k) => builder.key(k));
+        try {
+            await this.client.submit(builder.build());
+            if (commit) await this.commit();
+            return Promise.resolve(1);
+        } catch (err) {
+            return Promise.reject(err);
+        }
+    }
+
+    async createVertexCentricIndex(index: VertexCentricIndex, commit = false): Promise<number> {
+            const builder = new VertexCentricIndexBuilder(
+                index.name
+            );
+            builder
+                .direction(index.direction)
+                .edgelabel(index.edgelabel)
+                .order(index.order);
+            index.keys.forEach((k) => builder.key(k));
+            try {
+                await this.client.submit(builder.build());
+                if (commit) await this.commit();
+                return Promise.resolve(1);
+            } catch (err) {
+                return Promise.reject(err);
+            }
     }
 
     /**
@@ -82,39 +119,18 @@ export class JanusGraphManager {
      */
     async createIndices(schema: GraphSchema, commit = false): Promise<number> {
         try {
+            this.init();
             let count = 0;
             // Generate graph indices.
             count += (
                 await Promise.all(
-                    schema.graphIndices
-                        .map((i) => {
-                            const builder = new GraphIndexBuilder(i.name);
-                            builder
-                                .label(i.label)
-                                .type(i.type)
-                                .unique(i.unique);
-                            i.keys.forEach((k) => builder.key(k));
-                            return builder.build();
-                        })
-                        .map((msg) => this.client.submit(msg))
+                    schema.graphIndices.map((i) => this.createGraphIndex(i, commit))
                 )
             ).length;
             // Generate vc indices.
             count += (
                 await Promise.all(
-                    schema.vcIndices
-                        .map((i) => {
-                            const builder = new VertexCentricIndexBuilder(
-                                i.name
-                            );
-                            builder
-                                .direction(i.direction)
-                                .edgelabel(i.edgelabel)
-                                .order(i.order);
-                            i.keys.forEach((k) => builder.key(k));
-                            return builder.build();
-                        })
-                        .map((msg) => this.client.submit(msg))
+                    schema.vcIndices.map((i) => this.createVertexCentricIndex(i, commit))
                 )
             ).length;
             if (commit) {
@@ -128,25 +144,23 @@ export class JanusGraphManager {
 
     /**
      * Attempts to enable indices.
-     * @param schema - GraphSchema to enable indicies for. 
+     * @param schema - GraphSchema to enable indicies for.
      * @param commit - Whether or not to commit and close the traversal. Default: `false`
      * @returns A promise containing the number of successful traversals made.
      */
     async enableIndices(schema: GraphSchema, commit = false): Promise<number> {
         try {
-            const gi = schema.graphIndices
-            .map((i) => {
+            this.init();
+            const gi = schema.graphIndices.map((i) => {
                 const builder = new EnableIndexBuilder(i.name, schema.name);
                 return builder.build();
             });
-            const vci = schema.vcIndices
-                .map((i) => {
-                    const builder = new EnableIndexBuilder(i.name, schema.name);
-                    return builder.type("VertexCentric")
-                        .label(i.edgelabel)
-                        .build();
-                });
-            const count = [...gi, ...vci].map((msg) => this.client.submit(msg)).length;
+            const vci = schema.vcIndices.map((i) => {
+                const builder = new EnableIndexBuilder(i.name, schema.name);
+                return builder.type('VertexCentric').label(i.edgelabel).build();
+            });
+            const count = [...gi, ...vci].map((msg) => this.client.submit(msg))
+                .length;
             if (commit) {
                 await this.commit();
             }
@@ -164,6 +178,7 @@ export class JanusGraphManager {
      */
     async createSchema(schema: GraphSchema, indices = false): Promise<number> {
         try {
+            this.init();
             let count = 0;
             // Extract/Build our properties definitions.
             count += (
@@ -205,9 +220,9 @@ export class JanusGraphManager {
                 )
             ).length;
             if (indices) {
+                await this.commit();
                 count += await this.createIndices(schema);
             }
-            await this.commit();
             return Promise.resolve(count);
         } catch (err) {
             return Promise.reject(err);
@@ -221,10 +236,14 @@ export class JanusGraphManager {
      */
     async commit(message?: string): Promise<unknown> {
         try {
-            const commit = await this.client.submit(`${message ?? ""};mgmt.commit();`);
+            this.init();
+            const commit = await this.client.submit(
+                `${message ?? ''};mgmt.commit();`
+            );
+            this.state = 'COMMIT';
             return commit;
         } catch (err) {
-            this.state = "ERROR";
+            this.state = 'ERROR';
             return Promise.reject(err);
         }
     }
@@ -235,11 +254,12 @@ export class JanusGraphManager {
      */
     async close(): Promise<void> {
         try {
+            if (['CLOSED', 'ERROR'].some((s) => s === this.state)) return;
             const close = await this.client.close();
-            this.state = "CLOSED";
+            this.state = 'CLOSED';
             return close;
         } catch (err) {
-            this.state = "ERROR";
+            this.state = 'ERROR';
             return Promise.reject(err);
         }
     }

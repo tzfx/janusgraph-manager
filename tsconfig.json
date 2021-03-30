@@ -1,13 +1,12 @@
 {
-    "extends": "@tsconfig/recommended/tsconfig.json",
+    "extends": "@tsconfig/node14/tsconfig.json",
     "compilerOptions": {
         "declaration": true,
         "downlevelIteration": true,
         "preserveConstEnums": true,
-        "target": "ES5",
+        "esModuleInterop": true,
         "removeComments": true,
         "outDir": "build",
-        "lib": ["ES2019"],
         "sourceMap": true,
     },
     "include": ["src/**/*.ts"],
