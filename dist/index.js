@@ -389,6 +389,7 @@ class JanusGraphManager {
         }
     }
     async createGraphIndex(index, commit = false) {
+        await this.init();
         const builder = new builders_1.GraphIndexBuilder(index.name);
         builder.label(index.label).type(index.type).unique(index.unique);
         index.keys.forEach((k) => builder.key(k));
@@ -403,6 +404,7 @@ class JanusGraphManager {
         }
     }
     async createVertexCentricIndex(index, commit = false) {
+        await this.init();
         const builder = new builders_1.VertexCentricIndexBuilder(index.name);
         builder
             .direction(index.direction)
@@ -421,7 +423,7 @@ class JanusGraphManager {
     }
     async createIndices(schema, commit = false) {
         try {
-            this.init();
+            await this.init();
             let count = 0;
             count += (await Promise.all(schema.graphIndices.map((i) => this.createGraphIndex(i, commit)))).length;
             count += (await Promise.all(schema.vcIndices.map((i) => this.createVertexCentricIndex(i, commit)))).length;
@@ -436,7 +438,7 @@ class JanusGraphManager {
     }
     async enableIndices(schema, commit = false) {
         try {
-            this.init();
+            await this.init();
             const gi = schema.graphIndices.map((i) => {
                 const builder = new builders_1.EnableIndexBuilder(i.name, schema.name);
                 return builder.build();
@@ -458,7 +460,7 @@ class JanusGraphManager {
     }
     async createSchema(schema, indices = false) {
         try {
-            this.init();
+            await this.init();
             let count = 0;
             count += (await Promise.all([...schema.vertices, ...schema.edges]
                 .flatMap((v) => v.properties)
@@ -496,7 +498,7 @@ class JanusGraphManager {
     }
     async commit(message) {
         try {
-            this.init();
+            await this.init();
             const commit = await this.client.submit(`${message ?? ''};mgmt.commit();`);
             this.state = 'COMMIT';
             return commit;

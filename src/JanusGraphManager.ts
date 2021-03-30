@@ -81,6 +81,7 @@ export class JanusGraphManager {
     }
 
     async createGraphIndex(index: GraphIndex, commit = false): Promise<number> {
+        await this.init();
         const builder = new GraphIndexBuilder(index.name);
         builder.label(index.label).type(index.type).unique(index.unique);
         index.keys.forEach((k) => builder.key(k));
@@ -94,6 +95,7 @@ export class JanusGraphManager {
     }
 
     async createVertexCentricIndex(index: VertexCentricIndex, commit = false): Promise<number> {
+            await this.init();
             const builder = new VertexCentricIndexBuilder(
                 index.name
             );
@@ -119,7 +121,7 @@ export class JanusGraphManager {
      */
     async createIndices(schema: GraphSchema, commit = false): Promise<number> {
         try {
-            this.init();
+            await this.init();
             let count = 0;
             // Generate graph indices.
             count += (
@@ -150,7 +152,7 @@ export class JanusGraphManager {
      */
     async enableIndices(schema: GraphSchema, commit = false): Promise<number> {
         try {
-            this.init();
+            await this.init();
             const gi = schema.graphIndices.map((i) => {
                 const builder = new EnableIndexBuilder(i.name, schema.name);
                 return builder.build();
@@ -178,7 +180,7 @@ export class JanusGraphManager {
      */
     async createSchema(schema: GraphSchema, indices = false): Promise<number> {
         try {
-            this.init();
+            await this.init();
             let count = 0;
             // Extract/Build our properties definitions.
             count += (
@@ -236,7 +238,7 @@ export class JanusGraphManager {
      */
     async commit(message?: string): Promise<unknown> {
         try {
-            this.init();
+            await this.init();
             const commit = await this.client.submit(
                 `${message ?? ''};mgmt.commit();`
             );
