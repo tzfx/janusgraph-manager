@@ -1,12 +1,15 @@
 import { IndexType } from '../types/GraphIndex';
 import { Builder } from './Builder.interface';
 
+export type SchemaAction = "ENABLE_INDEX" | "REINDEX";
+
 /**
  * Builds a management string that attempts to enable a specific index.
  */
 export class EnableIndexBuilder implements Builder<string> {
     private _type!: IndexType;
     private _label!: string;
+    private _action: SchemaAction = 'ENABLE_INDEX';
 
     /**
      * Default constructor.
@@ -35,6 +38,11 @@ export class EnableIndexBuilder implements Builder<string> {
         return this;
     }
 
+    action(action: SchemaAction): this {
+        this._action = action;
+        return this;
+    }
+
     /**
      * Builds the output string.
      * @returns String that calls ENABLE_INDEX in JG.
@@ -51,7 +59,7 @@ export class EnableIndexBuilder implements Builder<string> {
         } else {
             output += `mgmt.getGraphIndex('${this._name}')`;
         }
-        output += `, SchemaAction.ENABLE_INDEX);`;
+        output += `, SchemaAction.${this._action}).get();`;
         return output;
     }
 }

@@ -48,7 +48,7 @@ export class GraphIndexBuilder implements Builder<string> {
                 (key) =>
                     `.addKey(mgmt.getPropertyKey('${key.field}')${
                         this._type === 'Mixed'
-                            ? `Mapping.${key.mapping}.asParameter()`
+                            ? `,Mapping.${key.mapping}.asParameter()`
                             : ''
                     })`
             )

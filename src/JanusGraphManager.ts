@@ -10,6 +10,7 @@ import {
 } from './builders';
 import { GraphIndex } from './types/GraphIndex';
 import { VertexCentricIndex } from './types/VertexCentricIndex';
+import { WaitForIndexBuilder } from './builders/WaitForIndexBuilder';
 
 type ManagerState = 'NEW' | 'READY' | 'COMMIT' | 'ERROR' | 'CLOSED';
 
@@ -94,23 +95,44 @@ export class JanusGraphManager {
         }
     }
 
-    async createVertexCentricIndex(index: VertexCentricIndex, commit = false): Promise<number> {
+    async createVertexCentricIndex(
+        index: VertexCentricIndex,
+        commit = false
+    ): Promise<number> {
+        const builder = new VertexCentricIndexBuilder(index.name);
+        builder
+            .direction(index.direction)
+            .edgelabel(index.edgelabel)
+            .order(index.order);
+        index.keys.forEach((k) => builder.key(k));
+        try {
             await this.init();
-            const builder = new VertexCentricIndexBuilder(
-                index.name
-            );
-            builder
-                .direction(index.direction)
-                .edgelabel(index.edgelabel)
-                .order(index.order);
-            index.keys.forEach((k) => builder.key(k));
-            try {
-                await this.client.submit(builder.build());
-                if (commit) await this.commit();
-                return Promise.resolve(1);
-            } catch (err) {
-                return Promise.reject(err);
-            }
+            await this.client.submit(builder.build());
+            if (commit) await this.commit();
+            return Promise.resolve(1);
+        } catch (err) {
+            return Promise.reject(err);
+        }
+    }
+
+    async waitForIndices(schema: GraphSchema, graph?: string): Promise<number> {
+        try {
+            await this.init();
+            return (await Promise.all([...schema.graphIndices, ...schema.vcIndices].map((i) => this.waitForIndex(i, graph)))).length;
+        } catch (err) {
+            return Promise.reject(err);
+        }
+    }
+
+    async waitForIndex(index: GraphIndex | VertexCentricIndex, graph?: string): Promise<number> {
+        const builder = new WaitForIndexBuilder(index.name, graph);
+        try {
+            await this.init();
+            await this.client.submit(builder.build());
+            return Promise.resolve(1);
+        } catch (err) {
+            return Promise.reject(err);
+        }
     }
 
     /**
@@ -126,13 +148,17 @@ export class JanusGraphManager {
             // Generate graph indices.
             count += (
                 await Promise.all(
-                    schema.graphIndices.map((i) => this.createGraphIndex(i, commit))
+                    schema.graphIndices.map((i) =>
+                        this.createGraphIndex(i, commit)
+                    )
                 )
             ).length;
             // Generate vc indices.
             count += (
                 await Promise.all(
-                    schema.vcIndices.map((i) => this.createVertexCentricIndex(i, commit))
+                    schema.vcIndices.map((i) =>
+                        this.createVertexCentricIndex(i, commit)
+                    )
                 )
             ).length;
             if (commit) {
@@ -155,14 +181,17 @@ export class JanusGraphManager {
             await this.init();
             const gi = schema.graphIndices.map((i) => {
                 const builder = new EnableIndexBuilder(i.name, schema.name);
-                return builder.build();
+                return builder.action("REINDEX").build();
             });
             const vci = schema.vcIndices.map((i) => {
                 const builder = new EnableIndexBuilder(i.name, schema.name);
                 return builder.type('VertexCentric').label(i.edgelabel).build();
             });
-            const count = [...gi, ...vci].map((msg) => this.client.submit(msg))
-                .length;
+            const count = (
+                await Promise.all(
+                    [...gi, ...vci].map((msg) => this.client.submit(msg))
+                )
+            ).length;
             if (commit) {
                 await this.commit();
             }
@@ -226,6 +255,16 @@ export class JanusGraphManager {
                 count += await this.createIndices(schema);
             }
             return Promise.resolve(count);
+        } catch (err) {
+            return Promise.reject(err);
+        }
+    }
+
+    async getIndices(): Promise<Object[]> {
+        try {
+            await this.init();
+            const data = (await this.client.submit('mgmt.getGraphIndexes(Vertex.class)'));
+            return Promise.resolve(data._items);
         } catch (err) {
             return Promise.reject(err);
         }

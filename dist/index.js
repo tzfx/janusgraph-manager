@@ -64,6 +64,7 @@ class EnableIndexBuilder {
     constructor(_name, _graph = 'graph') {
         this._name = _name;
         this._graph = _graph;
+        this._action = 'ENABLE_INDEX';
     }
     type(type) {
         this._type = type;
@@ -76,6 +77,10 @@ class EnableIndexBuilder {
         this._label = label;
         return this;
     }
+    action(action) {
+        this._action = action;
+        return this;
+    }
     build() {
         let output = 'mgmt.updateIndex(';
         if (this._type === 'VertexCentric') {
@@ -86,7 +91,7 @@ class EnableIndexBuilder {
         else {
             output += `mgmt.getGraphIndex('${this._name}')`;
         }
-        output += `, SchemaAction.ENABLE_INDEX);`;
+        output += `, SchemaAction.${this._action}).get();`;
         return output;
     }
 }
@@ -135,7 +140,7 @@ class GraphIndexBuilder {
         output += `mgmt.buildIndex('${this._name}', Vertex.class)`;
         output += [...this._keys]
             .map((key) => `.addKey(mgmt.getPropertyKey('${key.field}')${this._type === 'Mixed'
-            ? `Mapping.${key.mapping}.asParameter()`
+            ? `,Mapping.${key.mapping}.asParameter()`
             : ''})`)
             .join('');
         output += this._unique ? `.unique()` : '';
@@ -290,6 +295,29 @@ exports.VertexCentricIndexBuilder = VertexCentricIndexBuilder;
 
 /***/ }),
 
+/***/ "./src/builders/WaitForIndexBuilder.ts":
+/*!*********************************************!*\
+  !*** ./src/builders/WaitForIndexBuilder.ts ***!
+  \*********************************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.WaitForIndexBuilder = void 0;
+class WaitForIndexBuilder {
+    constructor(name, graph = 'graph') {
+        this.name = name;
+        this.graph = graph;
+    }
+    build() {
+        return `ManagementSystem.awaitGraphIndexStatus(${this.graph}, '${this.name}').call()`;
+    }
+}
+exports.WaitForIndexBuilder = WaitForIndexBuilder;
+
+
+/***/ }),
+
 /***/ "./src/builders/index.ts":
 /*!*******************************!*\
   !*** ./src/builders/index.ts ***!
@@ -356,6 +384,7 @@ var exports = __webpack_exports__;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.JanusGraphManager = void 0;
 const builders_1 = __webpack_require__(/*! ./builders */ "./src/builders/index.ts");
+const WaitForIndexBuilder_1 = __webpack_require__(/*! ./builders/WaitForIndexBuilder */ "./src/builders/WaitForIndexBuilder.ts");
 class JanusGraphManager {
     constructor(client, options) {
         this.client = client;
@@ -404,7 +433,6 @@ class JanusGraphManager {
         }
     }
     async createVertexCentricIndex(index, commit = false) {
-        await this.init();
         const builder = new builders_1.VertexCentricIndexBuilder(index.name);
         builder
             .direction(index.direction)
@@ -412,9 +440,30 @@ class JanusGraphManager {
             .order(index.order);
         index.keys.forEach((k) => builder.key(k));
         try {
+            await this.init();
             await this.client.submit(builder.build());
             if (commit)
                 await this.commit();
+            return Promise.resolve(1);
+        }
+        catch (err) {
+            return Promise.reject(err);
+        }
+    }
+    async waitForIndices(schema, graph) {
+        try {
+            await this.init();
+            return (await Promise.all([...schema.graphIndices, ...schema.vcIndices].map((i) => this.waitForIndex(i, graph)))).length;
+        }
+        catch (err) {
+            return Promise.reject(err);
+        }
+    }
+    async waitForIndex(index, graph) {
+        const builder = new WaitForIndexBuilder_1.WaitForIndexBuilder(index.name, graph);
+        try {
+            await this.init();
+            await this.client.submit(builder.build());
             return Promise.resolve(1);
         }
         catch (err) {
@@ -441,14 +490,13 @@ class JanusGraphManager {
             await this.init();
             const gi = schema.graphIndices.map((i) => {
                 const builder = new builders_1.EnableIndexBuilder(i.name, schema.name);
-                return builder.build();
+                return builder.action("REINDEX").build();
             });
             const vci = schema.vcIndices.map((i) => {
                 const builder = new builders_1.EnableIndexBuilder(i.name, schema.name);
                 return builder.type('VertexCentric').label(i.edgelabel).build();
             });
-            const count = [...gi, ...vci].map((msg) => this.client.submit(msg))
-                .length;
+            const count = (await Promise.all([...gi, ...vci].map((msg) => this.client.submit(msg)))).length;
             if (commit) {
                 await this.commit();
             }
@@ -491,6 +539,16 @@ class JanusGraphManager {
                 count += await this.createIndices(schema);
             }
             return Promise.resolve(count);
+        }
+        catch (err) {
+            return Promise.reject(err);
+        }
+    }
+    async getIndices() {
+        try {
+            await this.init();
+            const data = (await this.client.submit('mgmt.getGraphIndexes(Vertex.class)'));
+            return Promise.resolve(data._items);
         }
         catch (err) {
             return Promise.reject(err);

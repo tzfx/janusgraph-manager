@@ -15,9 +15,12 @@ export declare class JanusGraphManager {
     constructor(client: driver.Client, options: JanusGraphMangerOptions);
     createGraphIndex(index: GraphIndex, commit?: boolean): Promise<number>;
     createVertexCentricIndex(index: VertexCentricIndex, commit?: boolean): Promise<number>;
+    waitForIndices(schema: GraphSchema, graph?: string): Promise<number>;
+    waitForIndex(index: GraphIndex | VertexCentricIndex, graph?: string): Promise<number>;
     createIndices(schema: GraphSchema, commit?: boolean): Promise<number>;
     enableIndices(schema: GraphSchema, commit?: boolean): Promise<number>;
     createSchema(schema: GraphSchema, indices?: boolean): Promise<number>;
+    getIndices(): Promise<Object[]>;
     commit(message?: string): Promise<unknown>;
     close(): Promise<void>;
 }

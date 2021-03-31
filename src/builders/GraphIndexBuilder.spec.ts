@@ -64,7 +64,7 @@ describe('GraphIndexBuilder', () => {
             mapping: 'STRING',
         } as IndexKey;
         const out = gib.key(key).type('Mixed').build();
-        expect(out).toContain('Mapping.STRING.asParameter()');
+        expect(out).toContain(`.addKey(mgmt.getPropertyKey('testfield'),Mapping.STRING.asParameter())`);
         expect(out).toContain(`.buildMixedIndex("search");`);
     });
 
