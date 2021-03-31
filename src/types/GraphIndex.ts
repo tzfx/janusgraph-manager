@@ -4,6 +4,7 @@ export type GraphIndex = {
     type: CompositeOrMixedIndexType;
     unique?: boolean;
     label?: string;
+    backend?: string;
 };
 
 export type IndexKey = {

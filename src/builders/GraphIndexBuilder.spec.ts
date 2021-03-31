@@ -65,7 +65,18 @@ describe('GraphIndexBuilder', () => {
         } as IndexKey;
         const out = gib.key(key).type('Mixed').build();
         expect(out).toContain(`.addKey(mgmt.getPropertyKey('testfield'),Mapping.STRING.asParameter())`);
-        expect(out).toContain(`.buildMixedIndex("search");`);
+        expect(out).toContain(`.buildMixedIndex('search');`);
+    });
+
+    it('should build a mixed index with custom backend', () => {
+        const gib = new GraphIndexBuilder('test');
+        const key = {
+            field: 'testfield',
+            mapping: 'STRING',
+        } as IndexKey;
+        const out = gib.key(key).type('Mixed').backend('testbackend').build();
+        expect(out).toContain(`.addKey(mgmt.getPropertyKey('testfield'),Mapping.STRING.asParameter())`);
+        expect(out).toContain(`.buildMixedIndex('testbackend');`);
     });
 
     it('should ignore duplicate keys', () => {

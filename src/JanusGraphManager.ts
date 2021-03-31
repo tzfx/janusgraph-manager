@@ -260,7 +260,7 @@ export class JanusGraphManager {
         }
     }
 
-    async getIndices(): Promise<Object[]> {
+    async getIndices(): Promise<unknown[]> {
         try {
             await this.init();
             const data = (await this.client.submit('mgmt.getGraphIndexes(Vertex.class)'));
