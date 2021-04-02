@@ -7,10 +7,9 @@ import {
     PropertyBuilder,
     VertexBuilder,
     VertexCentricIndexBuilder,
+    WaitForIndexBuilder
 } from './builders';
-import { GraphIndex } from './types/GraphIndex';
-import { VertexCentricIndex } from './types/VertexCentricIndex';
-import { WaitForIndexBuilder } from './builders/WaitForIndexBuilder';
+import { GraphIndex, VertexCentricIndex } from './types';
 
 type ManagerState = 'NEW' | 'READY' | 'COMMIT' | 'ERROR' | 'CLOSED';
 
@@ -61,6 +60,8 @@ export class JanusGraphManager {
     private async init(): Promise<ManagerState> {
         try {
             if (this.state !== 'READY') {
+                // Ensure that there are no open transactions while we are managing the graph.
+                await this.client.submit(`${this.options.graphName}.tx().rollback();`)
                 if (this.options.useConfiguredGraphFactory) {
                     // The ";0;" is a weird work around to prevent an error being thrown.
                     await this.client.submit(
@@ -149,7 +150,7 @@ export class JanusGraphManager {
             count += (
                 await Promise.all(
                     schema.graphIndices.map((i) =>
-                        this.createGraphIndex(i, commit)
+                        this.createGraphIndex(i)
                     )
                 )
             ).length;
@@ -157,7 +158,7 @@ export class JanusGraphManager {
             count += (
                 await Promise.all(
                     schema.vcIndices.map((i) =>
-                        this.createVertexCentricIndex(i, commit)
+                        this.createVertexCentricIndex(i)
                     )
                 )
             ).length;
@@ -189,7 +190,7 @@ export class JanusGraphManager {
             });
             const count = (
                 await Promise.all(
-                    [...gi, ...vci].map((msg) => this.client.submit(msg))
+                    [...gi, ...vci].map(async (msg) => await this.client.submit(msg))
                 )
             ).length;
             if (commit) {
@@ -223,7 +224,7 @@ export class JanusGraphManager {
                                 .cardinality(p.cardinality)
                                 .build();
                         })
-                        .map((msg) => this.client.submit(msg))
+                        .map(async (msg) => await this.client.submit(msg))
                 )
             ).length;
             // Create labels and associate properties for vertices.
@@ -235,7 +236,7 @@ export class JanusGraphManager {
                             v.properties.forEach((p) => builder.property(p));
                             return builder.build();
                         })
-                        .map((msg) => this.client.submit(msg))
+                        .map(async (msg) => await this.client.submit(msg))
                 )
             ).length;
             // Create labels and associate properties for edges.
@@ -247,12 +248,12 @@ export class JanusGraphManager {
                             e.properties.forEach((p) => builder.property(p));
                             return builder.build();
                         })
-                        .map((msg) => this.client.submit(msg))
+                        .map(async (msg) => await this.client.submit(msg))
                 )
             ).length;
             if (indices) {
                 await this.commit();
-                count += await this.createIndices(schema);
+                count += await this.createIndices(schema, true);
             }
             return Promise.resolve(count);
         } catch (err) {
@@ -260,6 +261,10 @@ export class JanusGraphManager {
         }
     }
 
+    /**
+     * Retrieves all of the graph indices for the current graph.
+     * @returns A promise containing a list of all the indices.
+     */
     async getIndices(): Promise<unknown[]> {
         try {
             await this.init();

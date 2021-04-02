@@ -68,6 +68,16 @@ describe('GraphIndexBuilder', () => {
         expect(out).toContain(`.buildMixedIndex('search');`);
     });
 
+    it('should build a mixed index with no mapping key', () => {
+        const gib = new GraphIndexBuilder('test');
+        const key = {
+            field: 'testfield'
+        } as IndexKey;
+        const out = gib.key(key).type('Mixed').build();
+        expect(out).toContain(`.addKey(mgmt.getPropertyKey('testfield'))`);
+        expect(out).toContain(`.buildMixedIndex('search');`);
+    });
+
     it('should build a mixed index with custom backend', () => {
         const gib = new GraphIndexBuilder('test');
         const key = {

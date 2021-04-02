@@ -9,7 +9,7 @@ export type GraphIndex = {
 
 export type IndexKey = {
     field: string;
-    mapping: IndexKeyMapping;
+    mapping?: IndexKeyMapping;
 };
 
 export type IndexKeyMapping = "STRING" | "TEXT" | "TEXTSTRING" | "PREFIX_TREE";
