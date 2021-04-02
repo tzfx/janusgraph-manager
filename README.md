@@ -14,3 +14,9 @@ Information for interacting directly with the JG API can be found here: <https:/
 - To compile js: `npm run build`
 - To run tests: `npm run test`
 - To lint: `npm run lint` or `npm run lint:fix`
+
+# Acknowledgements
+
+- Apache Cassandra, Apache Lucene, Apache, Lucene, Solr, TinkerPop, and Cassandra are trademarks of the Apache Software Foundation or its subsidiaries in Canada, the United States and/or other countries.
+
+- JanusGraph is a trademark of The Linux Foundation.
