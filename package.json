@@ -1,5 +1,5 @@
 {
-  "name": "janusgraph-manager",
+  "name": "@asymmetrik/janusgraph-manager",
   "version": "0.5.3",
   "description": "Janusgraph management tooling in NodeJS/Typescript",
   "keywords": [
@@ -18,7 +18,8 @@
     "test": "ts-node node_modules/jasmine/bin/jasmine"
   },
   "author": "Adam Stadler <astadler@asymmetrik.com>",
-  "repository": "github:tzfx/janusgraph-manager",
+  "copyright": "Copyright Asymmetrik, Ltd. 2021 - All Rights Reserved.",
+  "repository": "github:asymmetrik/janusgraph-manager",
   "files": [
     "dist/*"
   ],
