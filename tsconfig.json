@@ -5,7 +5,7 @@
         "downlevelIteration": true,
         "preserveConstEnums": true,
         "esModuleInterop": true,
-        "removeComments": true,
+        "removeComments": false,
         "outDir": "build",
         "sourceMap": true,
     },
