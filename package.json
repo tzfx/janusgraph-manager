@@ -1,6 +1,6 @@
 {
   "name": "@asymmetrik/janusgraph-manager",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Janusgraph management tooling in NodeJS/Typescript",
   "keywords": [
     "janusgraph",
@@ -12,6 +12,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "clean": "rm -rf build/*; rm -rf dist/*",
     "build": "webpack --mode development; webpack --mode production",
     "lint": "eslint . --ext .js,.ts,.yml",
     "lint:fix": "npm run lint --fix",

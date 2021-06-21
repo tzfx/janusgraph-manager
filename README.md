@@ -8,7 +8,17 @@ This project's goal is to have a JS/TS management library for JanusGraph, lettin
 
 Information for interacting directly with the JG API can be found here: <https://docs.janusgraph.org/master/operations/management/>. This library uses the gremlin client to directly interact with this API.
 
-## Commands
+## Use
+
+Import the manager with:
+
+```javascript
+const { JanusgraphManager } = require('@asymmetrik/janusgraph-manager');
+```
+
+There are also exposed types for all the different objects used by the manager class.
+
+## Development
 
 - To install dependencies: `npm i`
 - To compile js: `npm run build`
