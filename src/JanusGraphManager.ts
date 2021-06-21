@@ -7,10 +7,9 @@ import {
     PropertyBuilder,
     VertexBuilder,
     VertexCentricIndexBuilder,
+    WaitForIndexBuilder
 } from './builders';
-import { GraphIndex } from './types/GraphIndex';
-import { VertexCentricIndex } from './types/VertexCentricIndex';
-import { WaitForIndexBuilder } from './builders/WaitForIndexBuilder';
+import { GraphIndex, VertexCentricIndex } from './types';
 
 type ManagerState = 'NEW' | 'READY' | 'COMMIT' | 'ERROR' | 'CLOSED';
 
@@ -55,14 +54,17 @@ export class JanusGraphManager {
     }
 
     /**
-     * Opens the management system for the client session.
+     * Opens the management system for the client session.  
+     * Will be called internally to re-open the management system if a commit or error closes it.
      * @returns A promise with the state of the manager.
      */
     private async init(): Promise<ManagerState> {
         try {
             if (this.state !== 'READY') {
+                // Ensure that there are no open transactions while we are managing the graph.
+                await this.client.submit(`${this.options.graphName}.tx().rollback();`)
                 if (this.options.useConfiguredGraphFactory) {
-                    // The ";0;" is a weird work around to prevent an error being thrown.
+                    // The ";0;" prevents the client from attempting to serialize the graph/management system.
                     await this.client.submit(
                         `${this.options.graphName} = ConfiguredGraphFactory.open('${this.options.graphName}');0;`
                     );
@@ -81,6 +83,13 @@ export class JanusGraphManager {
         }
     }
 
+    /**
+     * Builds and persists a single graph index.  
+     * Currently, if an index with the same name is already created, this will *not* recreate the index.
+     * @param index GraphIndex to create.
+     * @param commit Whether or not to commit the changes.
+     * @returns 
+     */
     async createGraphIndex(index: GraphIndex, commit = false): Promise<number> {
         await this.init();
         const builder = new GraphIndexBuilder(index.name);
@@ -95,6 +104,13 @@ export class JanusGraphManager {
         }
     }
 
+    /**
+     * Builds and persists a single VertexCentric index.  
+     * Currently, if an index with the same name is already created, this will *not* recreate the index.
+     * @param index VertexCentricIndex to create.
+     * @param commit Whether or not to commit the changes.
+     * @returns 
+     */
     async createVertexCentricIndex(
         index: VertexCentricIndex,
         commit = false
@@ -115,6 +131,12 @@ export class JanusGraphManager {
         }
     }
 
+    /**
+     * Will pause execution until the management system reports that all indices on a graph have reached the REGISTERED state.
+     * @param schema GraphSchema to process.
+     * @param graph Name of the traversal alias to analyze. Default: `graph`
+     * @returns A promise with the number of indices that reached REGISTERED state.
+     */
     async waitForIndices(schema: GraphSchema, graph?: string): Promise<number> {
         try {
             await this.init();
@@ -124,6 +146,12 @@ export class JanusGraphManager {
         }
     }
 
+    /**
+     * Will pause execution until the management system reports that a single index on a graph has reached the REGISTERED state.
+     * @param index Index to process.
+     * @param graph Name of the traversal alias to analyze. Default: `graph`
+     * @returns A promise of 1, indicating that 1 index has reached REGISTERED state.
+     */
     async waitForIndex(index: GraphIndex | VertexCentricIndex, graph?: string): Promise<number> {
         const builder = new WaitForIndexBuilder(index.name, graph);
         try {
@@ -149,7 +177,7 @@ export class JanusGraphManager {
             count += (
                 await Promise.all(
                     schema.graphIndices.map((i) =>
-                        this.createGraphIndex(i, commit)
+                        this.createGraphIndex(i)
                     )
                 )
             ).length;
@@ -157,7 +185,7 @@ export class JanusGraphManager {
             count += (
                 await Promise.all(
                     schema.vcIndices.map((i) =>
-                        this.createVertexCentricIndex(i, commit)
+                        this.createVertexCentricIndex(i)
                     )
                 )
             ).length;
@@ -189,7 +217,7 @@ export class JanusGraphManager {
             });
             const count = (
                 await Promise.all(
-                    [...gi, ...vci].map((msg) => this.client.submit(msg))
+                    [...gi, ...vci].map(async (msg) => await this.client.submit(msg))
                 )
             ).length;
             if (commit) {
@@ -223,7 +251,7 @@ export class JanusGraphManager {
                                 .cardinality(p.cardinality)
                                 .build();
                         })
-                        .map((msg) => this.client.submit(msg))
+                        .map(async (msg) => await this.client.submit(msg))
                 )
             ).length;
             // Create labels and associate properties for vertices.
@@ -235,7 +263,7 @@ export class JanusGraphManager {
                             v.properties.forEach((p) => builder.property(p));
                             return builder.build();
                         })
-                        .map((msg) => this.client.submit(msg))
+                        .map(async (msg) => await this.client.submit(msg))
                 )
             ).length;
             // Create labels and associate properties for edges.
@@ -247,12 +275,12 @@ export class JanusGraphManager {
                             e.properties.forEach((p) => builder.property(p));
                             return builder.build();
                         })
-                        .map((msg) => this.client.submit(msg))
+                        .map(async (msg) => await this.client.submit(msg))
                 )
             ).length;
             if (indices) {
                 await this.commit();
-                count += await this.createIndices(schema);
+                count += await this.createIndices(schema, true);
             }
             return Promise.resolve(count);
         } catch (err) {
@@ -260,7 +288,11 @@ export class JanusGraphManager {
         }
     }
 
-    async getIndices(): Promise<Object[]> {
+    /**
+     * Retrieves all of the graph indices for the current graph.
+     * @returns A promise containing a list of all the indices.
+     */
+    async getIndices(): Promise<unknown[]> {
         try {
             await this.init();
             const data = (await this.client.submit('mgmt.getGraphIndexes(Vertex.class)'));

@@ -11,6 +11,7 @@ export class GraphIndexBuilder implements Builder<string> {
     private _keys: IndexKey[] = [];
     private _unique?: boolean;
     private _label?: string;
+    private _backend?: string;
 
     constructor(private _name: string) {}
 
@@ -34,6 +35,11 @@ export class GraphIndexBuilder implements Builder<string> {
         this._label = label;
         return this;
     }
+    
+    backend(backend?: string): this {
+        this._backend = backend;
+        return this;
+    }
 
     build(): string {
         if (this._keys.length === 0) {
@@ -41,13 +47,16 @@ export class GraphIndexBuilder implements Builder<string> {
                 `Unable to generate index ${this._name} with no key definitions.`
             );
         }
+        if (this._type !== "Mixed" && this._backend != null) {
+            console.warn("Composite index type and non-null backend. Will ignore backend.");
+        }
         let output = `if (!mgmt.containsGraphIndex('${this._name}')) `;
         output += `mgmt.buildIndex('${this._name}', Vertex.class)`;
         output += [...this._keys]
             .map(
                 (key) =>
                     `.addKey(mgmt.getPropertyKey('${key.field}')${
-                        this._type === 'Mixed'
+                        this._type === 'Mixed' && key.mapping != null
                             ? `,Mapping.${key.mapping}.asParameter()`
                             : ''
                     })`
@@ -60,7 +69,7 @@ export class GraphIndexBuilder implements Builder<string> {
                 : '';
         return output.concat(
             this._type === 'Mixed'
-                ? '.buildMixedIndex("search");'
+                ? `.buildMixedIndex('${this._backend ?? 'search'}');`
                 : '.buildCompositeIndex();'
         );
     }

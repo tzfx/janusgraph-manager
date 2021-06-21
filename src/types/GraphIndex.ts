@@ -4,11 +4,12 @@ export type GraphIndex = {
     type: CompositeOrMixedIndexType;
     unique?: boolean;
     label?: string;
+    backend?: string;
 };
 
 export type IndexKey = {
     field: string;
-    mapping: IndexKeyMapping;
+    mapping?: IndexKeyMapping;
 };
 
 export type IndexKeyMapping = "STRING" | "TEXT" | "TEXTSTRING" | "PREFIX_TREE";
