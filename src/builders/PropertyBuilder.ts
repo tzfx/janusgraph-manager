@@ -2,17 +2,17 @@ import { Builder } from "./Builder.interface";
 import { PropertyCardinality, PropertyType } from "../types/Property";
 
 export class PropertyBuilder implements Builder<string> {
-    private _datatype!: PropertyType;
-    private _cardinality: PropertyCardinality = "SINGLE";
+    private _datatype?: PropertyType;
+    private _cardinality?: PropertyCardinality = "SINGLE";
 
     constructor(private _key: string) {}
 
-    cardinality(cardinality: PropertyCardinality): this {
+    cardinality(cardinality?: PropertyCardinality): this {
         this._cardinality = cardinality;
         return this;
     }
 
-    datatype(datatype: PropertyType): this {
+    datatype(datatype?: PropertyType): this {
         this._datatype = datatype;
         return this;
     }

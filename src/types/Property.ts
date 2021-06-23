@@ -1,7 +1,13 @@
+/**
+ * JanusGraph Property.
+ * @property key - name of the property.
+ * @property datatype - default: `Object.class`
+ * @property cardinality - default: `SINGLE`
+ */
 export type Property = {
     key: string;
-    datatype: PropertyType;
-    cardinality: PropertyCardinality;
+    datatype?: PropertyType;
+    cardinality?: PropertyCardinality;
 };
 
 export type PropertyType =
