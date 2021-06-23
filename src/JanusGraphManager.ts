@@ -93,7 +93,7 @@ export class JanusGraphManager {
     async createGraphIndex(index: GraphIndex, commit = false): Promise<number> {
         await this.init();
         const builder = new GraphIndexBuilder(index.name);
-        builder.label(index.label).type(index.type).unique(index.unique);
+        builder.label(index.label).type(index.type).unique(index.unique).backend(index.backend);
         index.keys.forEach((k) => builder.key(k));
         try {
             await this.client.submit(builder.build());
