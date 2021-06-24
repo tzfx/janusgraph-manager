@@ -24,7 +24,7 @@ export class PropertyBuilder implements Builder<string> {
             this._datatype != null ? `.dataType(${this._datatype}.class)` : '';
         output +=
             this._cardinality != null
-                ? `.cardinality(Cardinality.${this._cardinality})`
+                ? `.cardinality(org.janusgraph.core.Cardinality.${this._cardinality})`
                 : '';
         return output.concat('.make();');
     }

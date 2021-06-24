@@ -11,7 +11,9 @@ describe('PropertyBuilder', () => {
         // Use default dataType
         expect(out).not.toContain('dataType');
         // Make default cardinality
-        expect(out).toContain(`.cardinality(Cardinality.SINGLE).make();`);
+        expect(out).toContain(
+            `.cardinality(org.janusgraph.core.Cardinality.SINGLE).make();`
+        );
     });
 
     it('should set a datatype', () => {
@@ -23,6 +25,8 @@ describe('PropertyBuilder', () => {
     it('should set a cardinality', () => {
         const pb = new PropertyBuilder('test');
         const out = pb.cardinality('SET').build();
-        expect(out).toContain(`.cardinality(Cardinality.SET)`);
+        expect(out).toContain(
+            `.cardinality(org.janusgraph.core.Cardinality.SET)`
+        );
     });
 });
