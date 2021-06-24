@@ -1,4 +1,4 @@
-import { Property } from "./Property";
+import { Property } from './Property';
 
 /**
  * JanusGraph Edge.
@@ -13,8 +13,8 @@ export type Edge = {
 };
 
 export type EdgeMultiplicity =
-    | "MULTI"
-    | "SIMPLE"
-    | "MANY2ONE"
-    | "ONE2MANY"
-    | "ONE2ONE";
+    | 'MULTI'
+    | 'SIMPLE'
+    | 'MANY2ONE'
+    | 'ONE2MANY'
+    | 'ONE2ONE';

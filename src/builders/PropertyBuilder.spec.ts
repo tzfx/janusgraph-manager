@@ -13,17 +13,16 @@ describe('PropertyBuilder', () => {
         // Make default cardinality
         expect(out).toContain(`.cardinality(Cardinality.SINGLE).make();`);
     });
-    
+
     it('should set a datatype', () => {
         const pb = new PropertyBuilder('test');
-        const out = pb.datatype("Short").build();
+        const out = pb.datatype('Short').build();
         expect(out).toContain(`.dataType(Short.class)`);
     });
 
     it('should set a cardinality', () => {
         const pb = new PropertyBuilder('test');
-        const out = pb.cardinality("SET").build();
+        const out = pb.cardinality('SET').build();
         expect(out).toContain(`.cardinality(Cardinality.SET)`);
     });
-
 });

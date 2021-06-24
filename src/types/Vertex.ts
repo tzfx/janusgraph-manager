@@ -1,6 +1,6 @@
-import { Property } from "./Property";
+import { Property } from './Property';
 
 export type Vertex = {
-    label: string,
-    properties: Property[]
-}
+    label: string;
+    properties: Property[];
+};

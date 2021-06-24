@@ -1,7 +1,7 @@
 import { IndexType } from '../types/GraphIndex';
 import { Builder } from './Builder.interface';
 
-export type SchemaAction = "ENABLE_INDEX" | "REINDEX";
+export type SchemaAction = 'ENABLE_INDEX' | 'REINDEX';
 
 /**
  * Builds a management string that attempts to enable a specific index.

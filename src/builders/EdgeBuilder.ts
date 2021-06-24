@@ -1,9 +1,9 @@
-import { Builder } from "./Builder.interface";
-import { EdgeMultiplicity } from "../types/Edge";
-import { Property } from "../types/Property";
+import { Builder } from './Builder.interface';
+import { EdgeMultiplicity } from '../types/Edge';
+import { Property } from '../types/Property';
 
 export class EdgeBuilder implements Builder<string> {
-    private _multiplicity: EdgeMultiplicity = "MULTI";
+    private _multiplicity: EdgeMultiplicity = 'MULTI';
     private _properties: Property[] = [];
 
     constructor(private _label: string) {}
@@ -25,15 +25,15 @@ export class EdgeBuilder implements Builder<string> {
         output +=
             this._multiplicity != null
                 ? `.multiplicity(${this._multiplicity})`
-                : "";
-        output += ".make();";
+                : '';
+        output += '.make();';
         if (this._properties.length > 0) {
-            output += "mgmt.addProperties(";
+            output += 'mgmt.addProperties(';
             output += `mgmt.getEdgeLabel('${this._label}'), `;
             output += [...this._properties]
                 .map((prop) => `mgmt.getPropertyKey('${prop.key}')`)
-                .join(", ");
-            output += ")";
+                .join(', ');
+            output += ')';
         }
         return output;
     }

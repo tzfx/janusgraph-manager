@@ -35,7 +35,7 @@ export class GraphIndexBuilder implements Builder<string> {
         this._label = label;
         return this;
     }
-    
+
     backend(backend?: string): this {
         this._backend = backend;
         return this;
@@ -47,8 +47,10 @@ export class GraphIndexBuilder implements Builder<string> {
                 `Unable to generate index ${this._name} with no key definitions.`
             );
         }
-        if (this._type !== "Mixed" && this._backend != null) {
-            console.warn("Composite index type and non-null backend. Will ignore backend.");
+        if (this._type !== 'Mixed' && this._backend != null) {
+            console.warn(
+                'Composite index type and non-null backend. Will ignore backend.'
+            );
         }
         let output = `if (!mgmt.containsGraphIndex('${this._name}')) `;
         output += `mgmt.buildIndex('${this._name}', Vertex.class)`;
