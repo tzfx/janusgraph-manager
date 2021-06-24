@@ -7,8 +7,8 @@
         "esModuleInterop": true,
         "removeComments": false,
         "outDir": "build",
-        "sourceMap": true,
+        "sourceMap": true
     },
     "include": ["src/**/*.ts"],
-    "exclude": ["node_modules", "**/*.spec.ts"],
+    "exclude": ["node_modules", "**/*.spec.ts"]
 }

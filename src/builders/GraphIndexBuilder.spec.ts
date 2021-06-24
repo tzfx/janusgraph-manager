@@ -29,12 +29,8 @@ describe('GraphIndexBuilder', () => {
             } as IndexKey,
         ];
         const out = gib.key(key1).key(key2).build();
-        expect(out).toContain(
-            `.addKey(mgmt.getPropertyKey('testfield1'))`
-        );
-        expect(out).toContain(
-            `.addKey(mgmt.getPropertyKey('testfield2'))`
-        );
+        expect(out).toContain(`.addKey(mgmt.getPropertyKey('testfield1'))`);
+        expect(out).toContain(`.addKey(mgmt.getPropertyKey('testfield2'))`);
     });
 
     it('should set unique', () => {
@@ -64,14 +60,16 @@ describe('GraphIndexBuilder', () => {
             mapping: 'STRING',
         } as IndexKey;
         const out = gib.key(key).type('Mixed').build();
-        expect(out).toContain(`.addKey(mgmt.getPropertyKey('testfield'),Mapping.STRING.asParameter())`);
+        expect(out).toContain(
+            `.addKey(mgmt.getPropertyKey('testfield'),Mapping.STRING.asParameter())`
+        );
         expect(out).toContain(`.buildMixedIndex('search');`);
     });
 
     it('should build a mixed index with no mapping key', () => {
         const gib = new GraphIndexBuilder('test');
         const key = {
-            field: 'testfield'
+            field: 'testfield',
         } as IndexKey;
         const out = gib.key(key).type('Mixed').build();
         expect(out).toContain(`.addKey(mgmt.getPropertyKey('testfield'))`);
@@ -85,7 +83,9 @@ describe('GraphIndexBuilder', () => {
             mapping: 'STRING',
         } as IndexKey;
         const out = gib.key(key).type('Mixed').backend('testbackend').build();
-        expect(out).toContain(`.addKey(mgmt.getPropertyKey('testfield'),Mapping.STRING.asParameter())`);
+        expect(out).toContain(
+            `.addKey(mgmt.getPropertyKey('testfield'),Mapping.STRING.asParameter())`
+        );
         expect(out).toContain(`.buildMixedIndex('testbackend');`);
     });
 

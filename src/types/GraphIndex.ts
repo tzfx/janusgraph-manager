@@ -12,9 +12,9 @@ export type IndexKey = {
     mapping?: IndexKeyMapping;
 };
 
-export type IndexKeyMapping = "STRING" | "TEXT" | "TEXTSTRING" | "PREFIX_TREE";
+export type IndexKeyMapping = 'STRING' | 'TEXT' | 'TEXTSTRING' | 'PREFIX_TREE';
 
-export type CompositeOrMixedIndexType = "Composite" | "Mixed";
-export type VertexCentricIndexType = "VertexCentric";
+export type CompositeOrMixedIndexType = 'Composite' | 'Mixed';
+export type VertexCentricIndexType = 'VertexCentric';
 
 export type IndexType = CompositeOrMixedIndexType | VertexCentricIndexType;

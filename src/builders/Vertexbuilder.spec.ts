@@ -53,7 +53,10 @@ describe('VertexBuilder', () => {
             datatype: 'Byte',
             cardinality: 'SINGLE',
         };
-        const out = vb.property(prop).property({...prop}).build();
+        const out = vb
+            .property(prop)
+            .property({ ...prop })
+            .build();
         expect(out).toContain(
             `mgmt.addProperties(mgmt.getVertexLabel('test'), mgmt.getPropertyKey('testprop'))`
         );

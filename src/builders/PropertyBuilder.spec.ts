@@ -11,19 +11,22 @@ describe('PropertyBuilder', () => {
         // Use default dataType
         expect(out).not.toContain('dataType');
         // Make default cardinality
-        expect(out).toContain(`.cardinality(Cardinality.SINGLE).make();`);
+        expect(out).toContain(
+            `.cardinality(org.janusgraph.core.Cardinality.SINGLE).make();`
+        );
     });
-    
+
     it('should set a datatype', () => {
         const pb = new PropertyBuilder('test');
-        const out = pb.datatype("Short").build();
+        const out = pb.datatype('Short').build();
         expect(out).toContain(`.dataType(Short.class)`);
     });
 
     it('should set a cardinality', () => {
         const pb = new PropertyBuilder('test');
-        const out = pb.cardinality("SET").build();
-        expect(out).toContain(`.cardinality(Cardinality.SET)`);
+        const out = pb.cardinality('SET').build();
+        expect(out).toContain(
+            `.cardinality(org.janusgraph.core.Cardinality.SET)`
+        );
     });
-
 });

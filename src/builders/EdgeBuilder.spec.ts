@@ -55,7 +55,10 @@ describe('EdgeBuilder', () => {
             datatype: 'Byte',
             cardinality: 'SINGLE',
         };
-        const out = eb.property(prop).property({...prop}).build();
+        const out = eb
+            .property(prop)
+            .property({ ...prop })
+            .build();
         expect(out).toContain(
             `mgmt.addProperties(mgmt.getEdgeLabel('test'), mgmt.getPropertyKey('testprop'))`
         );

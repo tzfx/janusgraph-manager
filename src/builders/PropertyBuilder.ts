@@ -1,9 +1,9 @@
-import { Builder } from "./Builder.interface";
-import { PropertyCardinality, PropertyType } from "../types/Property";
+import { Builder } from './Builder.interface';
+import { PropertyCardinality, PropertyType } from '../types/Property';
 
 export class PropertyBuilder implements Builder<string> {
     private _datatype?: PropertyType;
-    private _cardinality?: PropertyCardinality = "SINGLE";
+    private _cardinality?: PropertyCardinality = 'SINGLE';
 
     constructor(private _key: string) {}
 
@@ -21,11 +21,11 @@ export class PropertyBuilder implements Builder<string> {
         let output = `if (!mgmt.containsPropertyKey('${this._key}')) `;
         output += `mgmt.makePropertyKey('${this._key}')`;
         output +=
-            this._datatype != null ? `.dataType(${this._datatype}.class)` : "";
+            this._datatype != null ? `.dataType(${this._datatype}.class)` : '';
         output +=
             this._cardinality != null
-                ? `.cardinality(Cardinality.${this._cardinality})`
-                : "";
-        return output.concat(".make();");
+                ? `.cardinality(org.janusgraph.core.Cardinality.${this._cardinality})`
+                : '';
+        return output.concat('.make();');
     }
 }
