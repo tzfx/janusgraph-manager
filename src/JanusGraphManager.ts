@@ -226,7 +226,7 @@ export class JanusGraphManager {
             });
             const vci = schema.vcIndices.map((i) => {
                 const builder = new EnableIndexBuilder(i.name, schema.name);
-                return builder.type('VertexCentric').label(i.edgelabel).build();
+                return builder.type('VertexCentric').label(i.edgelabel).action('REINDEX').build();
             });
             const count = (
                 await Promise.all(
