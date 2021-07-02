@@ -55,7 +55,7 @@ export class EnableIndexBuilder implements Builder<string> {
                 throw Error(
                     `Vertex Centric index '${this._name}' attempted to be enabled without a label definition.`
                 );
-            output += `mgmt.getRelationIndex(${this._graph}, '${this._name}', '${this._label}')`;
+            output += `mgmt.getRelationIndex(mgmt.getEdgeLabel('${this._label}'), '${this._name}')`;
         } else {
             output += `mgmt.getGraphIndex('${this._name}')`;
         }

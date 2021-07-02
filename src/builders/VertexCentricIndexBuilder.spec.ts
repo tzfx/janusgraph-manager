@@ -9,7 +9,7 @@ describe('VertexCentricIndexBuilder', () => {
             .direction('BOTH')
             .build();
         // Conditional build
-        expect(out).toContain(`if (!mgmt.containsGraphIndex('test'))`);
+        expect(out).toContain(`if (!mgmt.containsRelationIndex(mgmt.getEdgeLabel('testlabel'), 'test'))`);
         expect(out).toContain(
             `mgmt.buildEdgeIndex(mgmt.getEdgeLabel('testlabel'), 'test', Direction.BOTH, Order.asc, mgmt.getPropertyKey('testkey'));`
         );
@@ -49,7 +49,7 @@ describe('VertexCentricIndexBuilder', () => {
             .direction('BOTH')
             .build();
         expect(out).toContain(
-            `mgmt.buildEdgeIndex(mgmt.getEdgeLabel('testlabel'), 'test', Direction.BOTH, Order.asc, mgmt.getPropertyKey('testkey'));`
+            `mgmt.buildEdgeIndex(mgmt.getEdgeLabel('testlabel'), 'test', Direction.BOTH, Order.asc, mgmt.getPropertyKey('testkey'));0;`
         );
     });
 

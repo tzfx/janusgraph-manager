@@ -21,7 +21,7 @@ describe('EnableIndexBuilder', () => {
         const eib = new EnableIndexBuilder('test');
         const out = eib.type('VertexCentric').label('testlabel').build();
         expect(out).toEqual(
-            `mgmt.updateIndex(mgmt.getRelationIndex(graph, 'test', 'testlabel'), SchemaAction.ENABLE_INDEX).get();`
+            `mgmt.updateIndex(mgmt.getRelationIndex(mgmt.getEdgeLabel('testlabel'), 'test'), SchemaAction.ENABLE_INDEX).get();`
         );
     });
 
@@ -29,7 +29,7 @@ describe('EnableIndexBuilder', () => {
         const eib = new EnableIndexBuilder('test', 'testgraph');
         const out = eib.type('VertexCentric').label('testlabel').build();
         expect(out).toEqual(
-            `mgmt.updateIndex(mgmt.getRelationIndex(testgraph, 'test', 'testlabel'), SchemaAction.ENABLE_INDEX).get();`
+            `mgmt.updateIndex(mgmt.getRelationIndex(mgmt.getEdgeLabel('testlabel'), 'test'), SchemaAction.ENABLE_INDEX).get();`
         );
     });
 
