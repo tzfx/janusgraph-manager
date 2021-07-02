@@ -50,7 +50,7 @@ export class VertexCentricIndexBuilder implements Builder<string> {
                 `Unable to generate vc index ${this._name} with no edge label.`
             );
         }
-        let output = `if (!mgmt.containsGraphIndex('${this._name}')) `;
+        let output = `if (!mgmt.containsRelationIndex(mgmt.getEdgeLabel('${this._edgelabel}'), '${this._name}')) `;
         output += `mgmt.buildEdgeIndex(`;
         output += `mgmt.getEdgeLabel('${this._edgelabel}'), `;
         output += `'${this._name}', `;
@@ -59,6 +59,6 @@ export class VertexCentricIndexBuilder implements Builder<string> {
         output += [...this._keys]
             .map((key) => `mgmt.getPropertyKey('${key}')`)
             .join(', ');
-        return output.concat(');');
+        return output.concat(');0;');
     }
 }
